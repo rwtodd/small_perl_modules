@@ -1,0 +1,6 @@
+Revision history for Perl extension Tie::Hash::Default.
+
+1.00  Wed May 24 17:07:43 2023
+	- original version; created by h2xs 1.23 with options
+		-XAn Tie::Hash::Default
+

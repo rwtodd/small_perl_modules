@@ -1,0 +1,6 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Tie-Hash-Default.t
+lib/Tie/Hash/Default.pm
