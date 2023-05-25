@@ -21,6 +21,35 @@ my @EXCLAIM = ('Hail Eris!', 'All Hail Discordia!', 'Kallisti!', 'Fnord.', 'Or n
     'You are what you see.', 'Or is it?', 'This statement is false.',
     'Lies and slander, sire!', 'Hee hee hee!', 'Hail Eris, Hack Perl!');
 
+# X-Day was originally Cfn 40, 3164.  The scriptures say...
+# 
+# After `X-Day' passed without incident, the CoSG declared that it had 
+# got the year upside down --- X-Day is actually in 8661 AD rather than 
+# 1998 AD.
+# 
+# Thus, the True X-Day is Cfn 40, 9827.
+sub days_til_x($y,$d) {
+  use builtin qw/ceil/;
+  no warnings 'experimental::builtin';
+
+  my $xy = 8661;
+  my $xd = 185;
+  my $flip = 1;
+  if($xy < $y || ($y == $xy && $d > $xd)) {
+    $flip = -1;
+    ($xy,$xd,$y,$d) = ($y,$d,$xy,$xd);
+  }
+  if($y < 0) {
+    my $addend = -400 * int($y / 400);
+    $y += $addend;
+    $xy += $addend;
+  }
+  return $flip * (365 * ($xy - $y) + $xd - $d 
+                  + ceil($xy/4)   - ceil($y/4)
+                  - ceil($xy/100) + ceil($y/100)
+                  + ceil($xy/400) - ceil($y/400));
+}
+
 sub ddate($epoch=undef) {
   my ($year,$yday) = ( localtime($epoch // time()) )[5,7];
   $year += 1900;
@@ -44,7 +73,7 @@ sub ddate($epoch=undef) {
     weekday_abbrv => $tibs_p ? $TIBS : $DAYS[2 * $weekDay + 1],
     is_tibs => $tibs_p,
     holy_day => $holyDay,
-    days_til_xday => 10
+    days_til_xday => days_til_x($year,$yday)
   }
 }
 
@@ -66,9 +95,9 @@ my %callbacks = (
       my $dos = $$dd{day_of_season};
       if ($dos < 4 || $dos > 20) {
         my $digit = $dos % 10;
-	if($digit == 1) { $ord = "st" }
-	elsif($digit == 2) { $ord = "nd" }
-	elsif($digit == 3) { $ord = "rd" }
+        if($digit == 1) { $ord = "st" }
+        elsif($digit == 2) { $ord = "nd" }
+        elsif($digit == 3) { $ord = "rd" }
       }
       "$dos$ord"
     },

@@ -1,18 +1,21 @@
-# Before 'make install' is performed this script should be runnable with
-# 'make test'. After 'make install' it should work as 'perl Date-Discordian.t'
-
 #########################
 
-# change 'tests => 1' to 'tests => last_test_to_print';
+use v5.36;
 
-use strict;
-use warnings;
-
-use Test::More tests => 1;
+use Test::More tests => 11;
 BEGIN { use_ok('Date::Discordian') };
 
-#########################
+# test a random date
+my $dd = Date::Discordian::ddate_ymd(2020,2,19);
+is($$dd{year},3186, 'disco year 1');
+is($$dd{holy_day},'Chaoflux', 'disco holiday 1');
+is($$dd{season},'Chaos', 'disco season 1');
+is($$dd{season_abbrv},'Chs', 'disco season 2');
+is($$dd{day_of_season},50, 'disco day 1');
 
-# Insert your test code below, the Test::More module is use()ed here so read
-# its man page ( perldoc Test::More ) for help writing this test script.
-
+# test the x-day calculation
+is(Date::Discordian::ddate_ymd(8661,2,1)->{days_til_xday},154, 'days til x 1');
+is(Date::Discordian::ddate_ymd(8661,7,1)->{days_til_xday},4, 'days til x 2');
+is(Date::Discordian::ddate_ymd(8661,7,5)->{days_til_xday},0, 'days til x 3');
+is(Date::Discordian::ddate_ymd(8661,7,6)->{days_til_xday},-1, 'days til x 4');
+is(Date::Discordian::ddate_ymd(8656,2,29)->{days_til_xday},1953, 'days til x 5');
