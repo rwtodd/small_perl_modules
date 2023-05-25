@@ -1,0 +1,6 @@
+Revision history for Perl extension Date::Discordian.
+
+0.01  Wed May 24 22:42:29 2023
+	- original version; created by h2xs 1.23 with options
+		-XAn Date::Discordian
+
