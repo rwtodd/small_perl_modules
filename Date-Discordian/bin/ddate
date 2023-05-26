@@ -1,10 +1,87 @@
 #!perl
 
 use v5.36;
+use Getopt::Std;
 use Date::Discordian qw/ddate ddate_ymd fmt_ddate/;
 
 my $today_fmt = 'Today is %{%A, the %e day of %B%} in the YOLD %Y%N%nCelebrate %H';
 my $short_fmt = '%{%A, %B %d%}, %Y YOLD';
 
-my $today = ddate();
-say fmt_ddate($today_fmt,$today);
+my %opts;
+getopts('f:', \%opts) or HELP_MESSAGE(\*STDERR);
+
+# parse the command-line
+my $ddate;
+if(my $given_date = shift) {
+  $given_date =~ m/(?:(?<yy>\d\d\d\d)-)?(?<mm>\d\d?)-(?<dd>\d\d?)/ or HELP_MESSAGE(\*STDERR); 
+  my $year = $+{yy} // (localtime)[5]+1900;
+  $ddate = ddate_ymd($year, @+{qw/mm dd/});
+  $opts{f} //= $short_fmt;
+} else {
+  $ddate = ddate();
+  $opts{f} //= $today_fmt;
+}
+
+say fmt_ddate($opts{f},$ddate);
+
+sub VERSION_MESSAGE($fh, @) { $fh->say('ddate version 1.00'); }
+sub HELP_MESSAGE($fh, @) {
+  $fh->say('Usage: ddate [-f fmt] [[yyyy-]mm-dd]');
+  $fh->say('  (see man page for more info)');
+  exit -1;
+}
+__END__
+
+=head1 NAME
+
+ddate -- a utility to display the discordian date.
+
+=head1 SYNOPSYS
+
+  ddate [-f fmt] [[yyyy-]mm-dd]
+
+=head1 DESCRIPTION
+
+This is a Perl implementation of a C<ddate> utility. The inputs are very similar.
+
+=head1 OPTIONS
+
+=over 4
+
+=item -f fmt
+
+This gives a custom format string to the output. See below for more about the syntax
+of the string.
+
+=item yyyy-mm-dd
+
+This is the gregorian calendar date to format.  If omitted, today's date is used.  You
+can omit the year if you are referring to the current year.
+
+=back
+
+=head2 FORMAT STRING
+
+This function takes a format string, and a hash of discordian date information
+(such as what one gets from C<ddate>), and returns a formatted string. The
+format specifiers are all prefixed with a C<%> (percent-sign):
+
+  %A  weekday        /  %a  weekday (short version)
+  %B  season         /  %b  season (short version)
+  %d  day of season  /  %e  ordinal day of season
+  %Y  the Year of Our Lady of Discord
+  %X  the number of days left until X-Day
+
+  %H  name of the holy day, if it is one
+  %N  directive to skip the rest of the format
+      if today is not a holy day
+
+  %{ ... %}  either announce Tibs Day, or format the
+             interior string if it is not Tibs Day
+
+  %n  newline        /  %t  tab
+
+=head1 SEE ALSO
+
+The linux C<ddate> utility, wrongfully removed from binutils some time ago.
+
