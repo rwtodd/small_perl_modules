@@ -4,3 +4,4 @@ MANIFEST
 README
 t/Date-Discordian.t
 lib/Date/Discordian.pm
+bin/ddate

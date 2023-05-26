@@ -1,0 +1,10 @@
+#!perl
+
+use v5.36;
+use Date::Discordian qw/ddate ddate_ymd fmt_ddate/;
+
+my $today_fmt = 'Today is %{%A, the %e day of %B%} in the YOLD %Y%N%nCelebrate %H';
+my $short_fmt = '%{%A, %B %d%}, %Y YOLD';
+
+my $today = ddate();
+say fmt_ddate($today_fmt,$today);

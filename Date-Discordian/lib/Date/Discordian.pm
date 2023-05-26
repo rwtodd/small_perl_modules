@@ -5,7 +5,7 @@ use v5.36;
 use Exporter qw/import/;
 use Time::Local qw/timelocal_modern/;
 
-our @EXPORT_OK = qw/ddate ddate_ymd fmt/;
+our @EXPORT_OK = qw/ddate ddate_ymd fmt_ddate/;
 our $VERSION = '1.00';
 
 my $TIBS = "St. Tib's Day";
@@ -32,7 +32,7 @@ sub days_til_x($y,$d) {
   use builtin qw/ceil/;
   no warnings 'experimental::builtin';
 
-  my $xy = 8661;
+  my $xy = 8661; # X-Day is 8661, day 185
   my $xd = 185;
   my $flip = 1;
   if($xy < $y || ($y == $xy && $d > $xd)) {
@@ -63,7 +63,7 @@ sub ddate($epoch=undef) {
     ($seasonDay == 50 && $HOLYDAY_50[$seasonNbr]) || 
     undef;
 
-  { 
+  {
     year => $year + 1166, 
     day_of_year => $yday,
     season => $tibs_p ? $TIBS : $SEASONS[2 * $seasonNbr],
@@ -85,11 +85,11 @@ my %callbacks = (
     '%' => sub { '%' },
     'n' => sub { "\n" },
     't' => sub { "\t" },
-    'A' => sub($dd) { $dd->{weekday} },
-    'a' => sub($dd) { $dd->{weekday_abbrv} },
-    'B' => sub($dd) { $dd->{season} },
-    'b' => sub($dd) { $dd->{season_abbrv} },
-    'd' => sub($dd) { $dd->{day_of_season} },
+    'A' => sub($dd) { $$dd{weekday} },
+    'a' => sub($dd) { $$dd{weekday_abbrv} },
+    'B' => sub($dd) { $$dd{season} },
+    'b' => sub($dd) { $$dd{season_abbrv} },
+    'd' => sub($dd) { $$dd{day_of_season} },
     'e' => sub($dd) {
       my $ord = 'th';
       my $dos = $$dd{day_of_season};
@@ -109,7 +109,7 @@ my %callbacks = (
 
 sub _nothing($dd) { '' }
 
-sub fmt($fstring,$dd) {
+sub fmt_ddate($fstring,$dd) {
   my $nothing= \&_nothing;
   $fstring =~ s!%N.*$!! unless defined $dd->{holy_day};
   $fstring =~ s!%\{.*?%\}!$TIBS!g if $dd->{is_tibs};
@@ -118,7 +118,6 @@ sub fmt($fstring,$dd) {
 }
 
 sub is_leapyear($y) { $y % 4 == 0 and $y % 100 != 0 or $y % 400 == 0 }
-
 
 1;
 __END__
@@ -130,19 +129,68 @@ Date::Discordian - Calculating the discordian date
 
 =head1 SYNOPSIS
 
-  use Date::Discordian qw/ddate fmt/;
+  use Date::Discordian qw/ddate fmt_ddate/;
+  say fmt_ddate("The year is %Y. %.",ddate);
 
 =head1 DESCRIPTION
 
-Blah blah blah.
+This is a module for converting epoch-C<time> and dates to days of the
+Discordian Calendar.
 
-=head2 EXPORT
+=head2 ddate($epoch=undef)
 
-None by default.
+This function converts a seconds-since-epoch timestamp (such as from the
+C<time> function) into a hash of information about the equivalent Discordian date.
+If called without an argument, it uses the current time.
+
+=head3 Hash Keys
+
+  year           the YOLD
+  day_of_year    the day within the year [0-364 for non-tibsyears] 
+  season         Chaos|Discord|Confusion|Bureaucracy|The Aftermath
+  season_abbrv   Chs  |Dsc    |Cfn      |Bcy        |Afm
+  day_of_season  [1-73]
+  weekday        Sweetmorn|Boomtime|Pungenday|Prickle-Prickle|Setting Orange
+  weekday_abbrv  SM       |BT      |PD       |PP             |SO
+  is_tibs        true|false 
+  holy_day       Mungday |Mojoday  |Syaday   |Zaraday |Maladay
+                 Chaoflux|Discoflux|Confuflux|Bureflux|Afflux
+  days_til_xday  Days until Cfn 40, 9827
+
+=head2 ddate_ymd($year,$month,$day)
+
+This function converts a given year, month, and day into a hash of information
+about the equivalent Discordian date. The hash returned is just like the one
+from C<ddate>.
+
+=head2 fmt_ddate($fmt_str, $ddate)
+
+This function takes a format string, and a hash of discordian date information
+(such as what one gets from C<ddate>), and returns a formatted string. The
+format specifiers are all prefixed with a C<%> (percent-sign):
+
+  %A  weekday        /  %a  weekday (short version)
+  %B  season         /  %b  season (short version)
+  %d  day of season  /  %e  ordinal day of season
+  %Y  the Year of Our Lady of Discord
+  %X  the number of days left until X-Day
+
+  %H  name of the holy day, if it is one
+  %N  directive to skip the rest of the format
+      if today is not a holy day
+
+  %{ ... %}  either announce Tibs Day, or format the
+             interior string if it is not Tibs Day
+
+  %n  newline        /  %t  tab
 
 =head1 SEE ALSO
 
-If you have a web site set up for your module, mention it here.
+=over 4
+
+=item * L<Principia Discordia.|http://www.ology.org/principia/>
+
+=back
 
 =head1 AUTHOR
 
@@ -155,6 +203,5 @@ Copyright (C) 2023 by Richard Todd
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.36.1 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut
