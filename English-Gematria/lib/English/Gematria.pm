@@ -33,9 +33,30 @@ my %ciphers = (
 sub named_ciphers() { keys %ciphers }
 
 package English::Gematria::Cipher {
+  use Carp;
   use List::Util ();
   sub sum($self, $str) {
     List::Util::sum map { $self->{$_} // 0 } split(//, $str) 
+  }
+
+  sub new($cls,$cipher_hash) {
+    croak 'Cipher definition must be a hash ref!' unless( ref($cipher_hash) eq 'HASH' );
+    bless $cipher_hash, $cls;
+  }
+
+  sub describe($self, $fh) {
+    my $count = 0;
+    for my $k ('A' .. 'Z') {
+      my $val = $self->{$k} // 0;
+      my $lcval = $self->{lc $k} // 0;
+      $val .= "/$lcval" if($val != $lcval);
+      $fh->print("$k: $val",++$count % 5 == 0 ? "\n" : "\t")
+    }
+    for my $k (sort grep { m/[^A-Za-z]/ } keys %$self) {
+      my $val = $self->{$k};
+      $fh->print("$k: $val",++$count % 5 == 0 ? "\n" : "\t")
+    }
+    $fh->print("\n") unless $count % 5 == 0;
   }
 }
 
@@ -48,7 +69,15 @@ sub make_cipher($cipher) {
   for my $letter ('A' .. 'Z') {
     $result{lc $letter} = $result{$letter} = $$cipher[$idx++]; 
   }
-  bless \%result, 'English::Gematria::Cipher';
+  English::Gematria::Cipher->new(\%result);
+}
+
+sub synonyms($dict) {
+  my %result;
+  for my $word (sort keys $dict->%*) {
+    push $result{ $$dict{$word} }->@*, $word;
+  }
+  return \%result;
 }
 
 1;
