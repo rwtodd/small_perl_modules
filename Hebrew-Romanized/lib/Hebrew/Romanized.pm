@@ -6,18 +6,28 @@ use Exporter qw(import);
 
 our @EXPORT_OK = qw/to_hebrew/;
 our @EXPORT = ();
-our $VERSION = '1.10';
+our $VERSION = '1.20';
 
 use Tie::Hash::Default;
 tie my %tbl, 'Tie::Hash::Default';
 %tbl = (
-  A => "\x{5d0}", B => "\x{5d1}", G => "\x{5d2}", D => "\x{5d3}",    # aleph, beth, gimel, dalet
-  H => "\x{5d4}", V => "\x{5d5}", Z => "\x{5d6}", "Ch" => "\x{5d7}", # heh, vav, zain, cheth
-  T => "\x{5d8}", I => "\x{5d9}", Kf => "\x{5da}", K => "\x{5db}",  Ki => "\x{5db}",  # tayt, yod, kaf_final, kaf, kaf_initial
-  L => "\x{5dc}", Mf => "\x{5dd}", M => "\x{5de}", Mi => "\x{5de}", Nf => "\x{5df}",  # lamed, mem_final, mem, mem_initial, nun_final
-  N => "\x{5e0}", S => "\x{5e1}", O => "\x{5e2}", Pf => "\x{5e3}",   # nun, samekh, ayin, peh_final
-  P => "\x{5e4}", Pi => "\x{5e4}", Tzf => "\x{5e5}", Tz => "\x{5e6}", Tzi => "\x{5e6}", # peh, peh_initial, tzaddi_final, tzaddi, tzaddi_initial 
-  Q => "\x{5e7}",  R => "\x{5e8}", Sh => "\x{5e9}", Th => "\x{5ea}",  # qoph, resh, shin, tav
+  # aleph, beth, gimel, dalet
+  A => "\x{5d0}", B => "\x{5d1}", G => "\x{5d2}", D => "\x{5d3}",    
+  # heh, vav, zain, cheth
+  H => "\x{5d4}", V => "\x{5d5}", Z => "\x{5d6}", "Ch" => "\x{5d7}",
+  # tayt, yod, kaf_final, kaf, kaf_initial
+  T => "\x{5d8}", I => "\x{5d9}", Kf => "\x{5da}", K => "\x{5db}",  Ki => "\x{5db}",  
+  # lamed, mem_final, mem, mem_initial, nun_final
+  L => "\x{5dc}", Mf => "\x{5dd}", M => "\x{5de}", Mi => "\x{5de}", Nf => "\x{5df}",  
+  # nun, samekh, ayin, peh_final
+  N => "\x{5e0}", S => "\x{5e1}", O => "\x{5e2}", Pf => "\x{5e3}", 
+  # peh, peh_initial, tzaddi_final, tzaddi, tzaddi_initial 
+  P => "\x{5e4}", Pi => "\x{5e4}", Tzf => "\x{5e5}", Tz => "\x{5e6}", Tzi => "\x{5e6}", 
+  # qoph, resh, shin, tav
+  Q => "\x{5e7}",  R => "\x{5e8}", Sh => "\x{5e9}", Th => "\x{5ea}",  
+  # Ligatures
+  # doube-yod, double-vav, vav-yod
+  Ii => "\x{5f2}", Vv => "\x{5f0}", Vi => "\x{5f1}",
   # niqqud
   ';;' => ';',       # escape an actual semicolon
   ';' => "\x{5b0}",  # Sh'va 
@@ -48,7 +58,7 @@ sub to_hebrew($rom) {
 
   # second, perform the transliteration, allowing for 2 niqqud between each letter
   $rom =~ s!
-    ([A-Z][fhilz]*+)       # consonant (and Shin dots)
+    ([A-Z][fhilvz]*+)       # consonant (and Shin dots)
     ($niqqud?+)($niqqud?+) # possible niqqud 
   !$tbl{$1}$tbl{$2}$tbl{$3}!gx;
   $rom
@@ -80,6 +90,9 @@ it's the one with which I'm most familiar.
   M  = mem     N  = nun     S  = samekh   O  = ayin
   P  = peh     Tz = tzaddi  Q  = qoph     R  = resh
   Sh = shin    Th = tav
+
+  Ligatures:
+  Ii = yod-yod   Vi = vav-yod     Vv = vav-vav
 
   Niqqud:
   ;  = Sh'va                *  = Dagesh

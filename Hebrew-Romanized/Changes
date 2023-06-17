@@ -1,5 +1,7 @@
 Revision history for Perl extension Hebrew::Romanized.
 
+1.20  Sat Jun 17
+        - added ligatures (Ii, Vv, Vi)
 1.10  Sat Jun 17
         - added vowel points
 1.00  Fri Jun 16 21:58:26 2023
