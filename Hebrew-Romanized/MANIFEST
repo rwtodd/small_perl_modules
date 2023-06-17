@@ -1,0 +1,7 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Hebrew-Romanized.t
+lib/Hebrew/Romanized.pm
+bin/rom-hebrew

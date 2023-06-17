@@ -1,0 +1,51 @@
+#!perl
+
+use v5.36;
+
+use Getopt::Std;
+use Hebrew::Romanized qw/to_hebrew/;
+
+my %options;
+getopts('n', \%options) or HELP_MESSAGE(\*STDERR);
+
+binmode STDOUT, ':utf8';
+while (<>) {
+  chomp;
+  $_ = to_hebrew($_);
+  $_ = encode_nonascii($_) if $options{n};
+  say;
+}
+
+sub encode_nonascii($s) {
+  $s =~ s/[^[:ascii:]]/sprintf "&#x%x;",ord($&)/eg;
+  $s
+}
+
+sub VERSION_MESSAGE($fh, @) { say $fh "rom-hebrew version 1.00"; }
+sub HELP_MESSAGE($fh, @) {
+  say $fh "Usage: rom-hebrew [-n] input-file";
+  say $fh "  (see perldoc rom-hebrew for more info)";
+  exit -1;
+}
+__END__
+
+=head1 rom-hebrew
+
+Converts romanized hebrew text to unicode suitable for putting on
+a mediawiki page. It can optionally encode the output to HTML hex-entities.
+
+It just converts C<stdin> to C<stdout>. At present it doesn't yet support
+any vowel marks. 
+
+=head2 Usage
+
+  rom-hebrew [-n] [<infile>]
+
+  -n  =>  eNcode output to HTML hex entities (e.g., &#x5e2;)
+
+=head2 See Also
+
+See the perldoc for L<Hebrew::Romanized|Hebrew::Romanized> for the transliteration table.
+
+=cut
+# vim: ft=perl sw=2 expandtab
