@@ -1,6 +1,8 @@
 Revision history for Perl extension Hebrew::Romanized.
 
-0.01  Fri Jun 16 21:58:26 2023
+1.10  Sat Jun 17
+        - added vowel points
+1.00  Fri Jun 16 21:58:26 2023
 	- original version; created by h2xs 1.23 with options
 		-XAn Hebrew::Romanized
 

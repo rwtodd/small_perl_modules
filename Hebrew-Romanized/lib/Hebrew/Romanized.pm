@@ -6,7 +6,7 @@ use Exporter qw(import);
 
 our @EXPORT_OK = qw/to_hebrew/;
 our @EXPORT = ();
-our $VERSION = '1.00';
+our $VERSION = '1.10';
 
 use Tie::Hash::Default;
 tie my %tbl, 'Tie::Hash::Default';
@@ -17,12 +17,40 @@ tie my %tbl, 'Tie::Hash::Default';
   L => "\x{5dc}", Mf => "\x{5dd}", M => "\x{5de}", Mi => "\x{5de}", Nf => "\x{5df}",  # lamed, mem_final, mem, mem_initial, nun_final
   N => "\x{5e0}", S => "\x{5e1}", O => "\x{5e2}", Pf => "\x{5e3}",   # nun, samekh, ayin, peh_final
   P => "\x{5e4}", Pi => "\x{5e4}", Tzf => "\x{5e5}", Tz => "\x{5e6}", Tzi => "\x{5e6}", # peh, peh_initial, tzaddi_final, tzaddi, tzaddi_initial 
-  Q => "\x{5e7}",  R => "\x{5e8}", Sh => "\x{5e9}", Th => "\x{5ea}"  # qoph, resh, shin, tav
+  Q => "\x{5e7}",  R => "\x{5e8}", Sh => "\x{5e9}", Th => "\x{5ea}",  # qoph, resh, shin, tav
+  # niqqud
+  ';;' => ';',       # escape an actual semicolon
+  ';' => "\x{5b0}",  # Sh'va 
+  ';3' => "\x{5b1}", # Reduced Segol
+  ';_' => "\x{5b2}", # Reduced Patach
+  ';7' => "\x{5b3}", # Reduced Kamatz
+  '1' => "\x{5b4}",  # Hiriq
+  '2' => "\x{5b5}",  # Zeire
+  '3' => "\x{5b6}",  # Segol
+  '_' => "\x{5b7}",  # Patach
+  '7' => "\x{5b8}",  # Kamatz
+  '*' => "\x{5bc}",  # Dagesh
+  '\\' => "\x{5bb}",  # Kubutz
+  '`' => "\x{5b9}",  # Holam
+  'Shl' => "\x{5e9}\x{5c2}", # Shin dot left
+  'Shr' => "\x{5e9}\x{5c1}"  # Shin dot right
 );
 
+my $niqqud = qr(;[;37_]?  |  [1237_*\\`])x; 
+
 sub to_hebrew($rom) {
-  $rom =~ s/(K|M|N|P|Tz)\b/$1f/g;
-  $rom =~ s/[A-Z][a-z]*/$tbl{$&}/g;
+  # first, add automatic final letters...
+  $rom =~ s{
+    (K|M|N|P|Tz)   # one of the potential final letters
+    (?=$niqqud*+   # looking at zero or more niqqud...
+       (?:\W|\Z))  # ...followed by a non-word or end-of-line 
+  }{$&f}gx;        # then make it final
+
+  # second, perform the transliteration, allowing for 2 niqqud between each letter
+  $rom =~ s!
+    ([A-Z][fhilz]*+)       # consonant (and Shin dots)
+    ($niqqud?+)($niqqud?+) # possible niqqud 
+  !$tbl{$1}$tbl{$2}$tbl{$3}!gx;
   $rom
 }
 
@@ -53,6 +81,16 @@ it's the one with which I'm most familiar.
   P  = peh     Tz = tzaddi  Q  = qoph     R  = resh
   Sh = shin    Th = tav
 
+  Niqqud:
+  ;  = Sh'va                *  = Dagesh
+  \\ =  Kubutz              `  = Holam
+  1  = Hiriq                2  = Zeire                
+  3  = Segol                ;3 = Reduced Segol        
+  _  = Patach               ;_ = Reduced Patach       
+  7  = Kamatz               ;7 = Reduced Kamatz       
+  Shl = Shin dot left       Shr = Shin dot right
+      ;; = escape an actual semicolon
+
 And, when a letter can be final, you can optionally add an 'i' or an 'f' to the end of it to
 force the transliteration to use the initial or final forms.  Otherwise, the module will
 translate potential finals on word boundaries to their final form automatically.
@@ -72,6 +110,5 @@ Copyright (C) 2023 by Richard Todd
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.36.1 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut
